@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <label for="code">Type your Code</label>
+    <input style="height: 500px; width: 100px;" type="text" name="code" onchange="handleChange(this.value)">
+    
+    <script>
+        async function handleChange(value) {
+            // send a post request to http://localhost:3000/api/post-code with the value
+            
+
+            const res = await fetch('http://localhost:3000/api/post-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({code: value})
+            })
+
+            console.log(res);
+        }
+    </script>
+</body>
+</html>

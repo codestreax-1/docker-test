@@ -1,0 +1,1 @@
+#include<iostream> using namespace std; int main(){cout<<"something is getting printed";return 0;}
