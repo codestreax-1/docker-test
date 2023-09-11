@@ -7,12 +7,11 @@
 </head>
 <body>
     <label for="code">Type your Code</label>
-    <input style="height: 500px; width: 100px;" type="text" name="code" onchange="handleChange(this.value)">
+    <br>
+    <input style="height: 500px; width: 500px;" type="text" name="code" onchange="handleChange(this.value)">
     
     <script>
         async function handleChange(value) {
-            // send a post request to http://localhost:3000/api/post-code with the value
-            
 
             const res = await fetch('http://localhost:3000/api/post-code', {
                 method: 'POST',
