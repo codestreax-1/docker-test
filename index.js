@@ -14,10 +14,26 @@ app.get('/', (req, res) => {
     }
 );
 
+app.get('/api/get-dir', (req, res) => {
+
+    // resolve path.resolve in the format like C:/Users/username/Desktop/cpp-ide
+
+    
+    res.json({
+        dir: dir
+    })
+});
+
 app.post('/api/post-code', (req, res) => {
-        console.log(req.body);
-        // write the req.body.code to a file named main.cpp and overwrite if it already exists
-        fs.writeFile('main.cpp', req.body.code, (err) => {
+        
+        const codeToExecute = `
+        #include <iostream>
+        using namespace std;
+        int main() {
+            ${req.body.code}
+            return 0;
+        }`
+        fs.writeFile('main.cpp', codeToExecute, (err) => {
                 if (err) {
                     console.log(err);
                     res.send('Error');
@@ -31,24 +47,33 @@ app.post('/api/post-code', (req, res) => {
 );
 
 app.get('/api/get-output', (req, res) => {
-    // execute the docker run command with image named cpp-test and get the output logged to a file named output.txt also send the output to the client
-    exec('docker run cpp-test > output.txt', (err, stdout, stderr) => {
+
+    // get start time in epoch
+    const startTime = new Date().getTime();
+    var endTime;
+    
+    const pathToMain = path.resolve().replace(/\\/g, '/').concat('/main.cpp');
+    exec(`docker run --rm -v ${pathToMain}:/home/sandbox/main.cpp cpp /bin/sh -c "g++ -o main main.cpp && ./main"`, (err, stdout, stderr) => {
             if (err) {
-                console.log(err);
-                res.send('Error');
+                const errorToSend = err.message.substring(err.message.indexOf('\n') + 1).replace('main.cpp: ','');
+                endTime = new Date().getTime();
+                res.status(400).json({
+                    error: errorToSend,
+                    timeToExecute: `${(endTime - startTime) / 1000}s`
+                })
             } else {
-                console.log('Output written successfully\n');
-                fs.readFile('output.txt', 'utf8', (err, data) => {
-                        if (err) {
-                            console.log(err);
-                            res.send('Error');
-                        } else {
-                            console.log('Output read successfully\n');
-                            res.json(data);
-                        }
-                    }
-                );
+                endTime = new Date().getTime();
+                res.json({
+                    output: stdout,
+                    timeToExecute: `${(endTime - startTime) / 1000}s`
+                })
             }
+
+            // get time taken in seconds
+            const timeTaken = (endTime - startTime) / 1000;
+
+            // log time taken
+            console.log(`Time taken: ${timeTaken} seconds`);
         }
     );
 });
